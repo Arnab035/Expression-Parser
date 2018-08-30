@@ -40,10 +40,26 @@ def check_for_unary_minus(list_tokens):
                 list_tokens[i] = '#'
     return list_tokens
 
+def tokenize(infix_expr):
+    tokens = check_for_unary_minus(re.findall(r"[+/*%&\^\|()-]|\w+|[<>]{2}", infix_expr))
+    indices = [index for index, token in enumerate(tokens) if token == ')']
+
+    for index in indices:
+        if tokens[index-1] in operators:
+            raise Exception, "Missing operand after {0} operator".format(tokens[index-1])
+    
+    # ignore the unary minus operator
+    op_indices = [index for index, token in enumerate(tokens) if token in operators and token != '#']
+    for index in op_indices:
+        if tokens[index-1] in operators or tokens[index+1] in operators:
+            if tokens[index+1] != '#':  # unary minus
+                raise Exception, "Expected operand before or after {0} operator".format(tokens[index])
+    return tokens
+
+
 
 def convert_infix_to_postfix(infix_expr):
-    tokens = check_for_unary_minus(re.findall(r"[+/*%&\^\|()-]|\w+|[<>]{2}", infix_expr))
-    print tokens
+    tokens = tokenize(infix_expr)
     postfix = []
     stack = []
     for token in tokens:
@@ -60,6 +76,9 @@ def convert_infix_to_postfix(infix_expr):
             stack.pop()
         else:
             # operator
+            if token not in operators:
+                raise Exception, "Invalid token!"
+
             if not stack or stack_top(stack) == '(':
                 stack.append(token)
             else:
@@ -104,9 +123,15 @@ def evaluate(postfix_expr):
 def get_input():
     open_parentheses = 0
     expr = ""
+    tokens = raw_input('Enter: ')
+    if tokens != '(':
+        raise Exception, "The input must start with a left bracket \"(\""
+    else:
+        open_parentheses += 1
+        expr += tokens
+
     while True:
         tokens = raw_input('Enter: ')
-        print tokens
         if tokens == '(':
             open_parentheses += 1
             expr += tokens
@@ -115,19 +140,19 @@ def get_input():
             if open_parentheses == 0:
                 expr += tokens
                 break
+            if open_parentheses < 0:
+                raise Exception, "Expected a left bracket \"(\" before the right bracket \")\""
             expr += tokens
         else:
             if tokens not in ['<<','>>'] and not is_int(tokens) and len(tokens) > 1:
-                print "Enter one character at a time"
-                return None
+                raise Exception, "Enter one character at a time"
+                # return None
             expr += tokens
     return expr
 
 
 if __name__ == "__main__":
     expr = get_input()
-    if expr is None:
-        exit()
     post_expr = convert_infix_to_postfix(expr)
     print post_expr
     result = evaluate(post_expr)
