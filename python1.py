@@ -120,7 +120,7 @@ def get_input():
                 break
             expr += tokens
         else:
-            if tokens not in ['<<','>>'] and len(tokens) > 1:
+            if tokens not in ['<<','>>'] and not is_int(tokens) and len(tokens) > 1:
                 print "Enter one character at a time"
                 return None
             expr += tokens
