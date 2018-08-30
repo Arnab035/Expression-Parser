@@ -48,7 +48,6 @@ def convert_infix_to_postfix(infix_expr):
     stack = []
     for token in tokens:
         if is_int(token):
-            print token
             postfix.append(int(token))
         elif token == '(':
             stack.append(token)
@@ -67,16 +66,14 @@ def convert_infix_to_postfix(infix_expr):
                 # stack_top is operator
                 top = stack_top(stack)
                 if token in right:
+                    if top is not None and top not in "()" and is_higher_or_equal_precedence(token, top):
+                        stack.append(token)
+                else:
                     while top is not None and top not in "()" and is_higher_or_equal_precedence(top, token):
                         postfix.append(top)
                         stack.pop()
                         top = stack_top(stack)
-                else:
-                    while top is not None and top not in "()" and is_higher_precedence(top, token):
-                        postfix.append(top)
-                        stack.pop()
-                        top = stack_top(stack)
-                stack.append(token)
+                    stack.append(token)
     # end of expression
     top = stack_top(stack)
     while top is not None:
